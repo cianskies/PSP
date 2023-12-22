@@ -1,5 +1,5 @@
 package pruebaGitHub;
 
-public class A {g
+public class A {
 
 }
