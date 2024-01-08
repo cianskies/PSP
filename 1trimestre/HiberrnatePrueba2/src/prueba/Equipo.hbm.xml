@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generated 18 dic 2023 10:56:59 by Hibernate Tools 6.3.1.Final --><!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class catalog="ciclistas" name="prueba.Equipo" optimistic-lock="none" table="equipo">
+        <id name="nomeq" type="string">
+            <column length="20" name="nomeq"/>
+            <generator class="assigned"/>
+        </id>
+        <property name="director" type="string">
+            <column length="50" name="director"/>
+        </property>
+        <set fetch="select" inverse="true" lazy="true" name="ciclistas" table="ciclista">
+            <key>
+                <column length="20" name="nomeq"/>
+            </key>
+            <one-to-many class="prueba.Ciclista"/>
+        </set>
+    </class>
+</hibernate-mapping>

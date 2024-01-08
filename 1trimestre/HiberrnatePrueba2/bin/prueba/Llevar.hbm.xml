@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generated 18 dic 2023 10:56:59 by Hibernate Tools 6.3.1.Final --><!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class catalog="ciclistas" name="prueba.Llevar" optimistic-lock="none" table="llevar">
+        <composite-id class="prueba.LlevarId" name="id">
+            <key-property name="codigo" type="string">
+                <column length="3" name="codigo"/>
+            </key-property>
+            <key-property name="dorsal" type="int">
+                <column name="dorsal"/>
+            </key-property>
+            <key-property name="netapa" type="int">
+                <column name="netapa"/>
+            </key-property>
+        </composite-id>
+        <many-to-one class="prueba.Maillot" fetch="select" insert="false" name="maillot" update="false">
+            <column length="3" name="codigo" not-null="true"/>
+        </many-to-one>
+        <many-to-one class="prueba.Ciclista" fetch="select" insert="false" name="ciclista" update="false">
+            <column name="dorsal" not-null="true"/>
+        </many-to-one>
+        <many-to-one class="prueba.Etapa" fetch="select" insert="false" name="etapa" update="false">
+            <column name="netapa" not-null="true"/>
+        </many-to-one>
+    </class>
+</hibernate-mapping>

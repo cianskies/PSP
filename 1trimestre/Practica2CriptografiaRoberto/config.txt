@@ -1,0 +1,6 @@
+///////////CONFIGURACION///////////
+Ruta del archivo: el_quijote.txt
+Clave: PassWord
+NUMERO DE HILOS LIMPIADORES: 57
+NUMERO DE HILOS ENCRIPTADORES: 10
+///////////////////////////////////

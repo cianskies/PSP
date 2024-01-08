@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generated 18 dic 2023 10:56:59 by Hibernate Tools 6.3.1.Final --><!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class catalog="ciclistas" name="prueba.Etapa" optimistic-lock="none" table="etapa">
+        <id name="netapa" type="int">
+            <column name="netapa"/>
+            <generator class="assigned"/>
+        </id>
+        <many-to-one class="prueba.Ciclista" fetch="select" name="ciclista">
+            <column name="dorsal"/>
+        </many-to-one>
+        <property name="km" type="java.lang.Integer">
+            <column name="km"/>
+        </property>
+        <property name="salida" type="string">
+            <column length="20" name="salida"/>
+        </property>
+        <property name="llegada" type="string">
+            <column length="20" name="llegada"/>
+        </property>
+        <set fetch="select" inverse="true" lazy="true" name="puertos" table="puerto">
+            <key>
+                <column name="netapa"/>
+            </key>
+            <one-to-many class="prueba.Puerto"/>
+        </set>
+        <set fetch="select" inverse="true" lazy="true" name="llevars" table="llevar">
+            <key>
+                <column name="netapa" not-null="true"/>
+            </key>
+            <one-to-many class="prueba.Llevar"/>
+        </set>
+    </class>
+</hibernate-mapping>

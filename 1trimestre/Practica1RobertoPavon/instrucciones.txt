@@ -1,0 +1,28 @@
+Manual De Instrucciones Hormigas:
+
+Numero de Hormigas: 3
+
+Ancho del Tablero: 100
+Alto del Tablero: 100
+
+Numero de Movimientos: 100
+
+Ancho de Hormiga 0: 20
+Alto de Hormiga 0: 9
+Direccion de Hormiga 0: 0
+Regla de Hormiga 0: llrr
+
+Ancho de Hormiga 1: 35
+Alto de Hormiga 1: 80
+Direccion de Hormiga 1: 0
+Regla de Hormiga 1: rlrl
+
+Ancho de Hormiga 2: 40
+Alto de Hormiga 2: 80
+Direccion de Hormiga 2: 0
+Regla de Hormiga 2: lrlr
+
+Ancho de Hormiga 3: 65
+Alto de Hormiga 3: 78
+Direccion de Hormiga 3: 0
+Regla de Hormiga 3: lrlr

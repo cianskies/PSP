@@ -1,0 +1,3 @@
+Ruta Texto = C:\Users\W7 Java\Desktop\el_quijote.txt
+Numero de Hilos = 4
+Clave Encriptación = PROCESO

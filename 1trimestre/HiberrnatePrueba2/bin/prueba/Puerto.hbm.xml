@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generated 18 dic 2023 10:56:59 by Hibernate Tools 6.3.1.Final --><!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class catalog="ciclistas" name="prueba.Puerto" optimistic-lock="none" table="puerto">
+        <id name="nompuerto" type="string">
+            <column length="20" name="nompuerto"/>
+            <generator class="assigned"/>
+        </id>
+        <many-to-one class="prueba.Ciclista" fetch="select" name="ciclista">
+            <column name="dorsal"/>
+        </many-to-one>
+        <many-to-one class="prueba.Etapa" fetch="select" name="etapa">
+            <column name="netapa"/>
+        </many-to-one>
+        <property name="altura" type="java.lang.Integer">
+            <column name="altura"/>
+        </property>
+        <property name="categoria" type="string">
+            <column length="1" name="categoria"/>
+        </property>
+        <property name="pendiente" type="java.lang.Integer">
+            <column name="pendiente"/>
+        </property>
+    </class>
+</hibernate-mapping>
