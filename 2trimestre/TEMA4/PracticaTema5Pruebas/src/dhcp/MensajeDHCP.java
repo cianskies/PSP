@@ -15,6 +15,7 @@ public class MensajeDHCP {
     
     private byte[] cabecera;
     private byte[] opciones;
+    private byte[] datos;
     
     private byte[] XID;
     private byte[] MAC;
@@ -22,11 +23,15 @@ public class MensajeDHCP {
     
     
     public MensajeDHCP(byte[] datos){
+        this.datos=datos;
         this.cabecera=getCabeceraMsj(datos);
         this.opciones=getOpcionesMsj(datos);
         this.XID=identificarXID(cabecera);
         this.MAC=identificarMAC(cabecera);
         
+    }
+    public byte[] getDatos(){
+        return datos;
     }
     public byte[] getXID(){
         return XID;

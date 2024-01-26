@@ -12,6 +12,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,15 +22,20 @@ import java.util.logging.Logger;
  * @author Administrador
  */
 public class Datos {
-    
+    public HashMap<String, Integer> codigos;
     private DatagramSocket socketPuerto67;
+    //el rango de ip debe ser 172.16.1.120-172.16.1.255
+    private int IDHost=120;
+    private ArrayList<Integer> direccionesEnUso;
     
     public Datos(DatagramSocket socketPuerto67){
         this.socketPuerto67=socketPuerto67;
+        codigos=iniciarDiccionario();
+        this.direccionesEnUso=new ArrayList<>();
     }
-    public void enviarMensaje(byte[] mensaje){
+    public void enviarMensaje(MensajeDHCP mensaje){
             try {
-                DatagramPacket dp=new DatagramPacket(mensaje,0,mensaje.length, InetAddress.getByName("255.255.255.255"),68);
+                DatagramPacket dp=new DatagramPacket(mensaje.getDatos(),0,mensaje.getDatos().length, InetAddress.getByName("255.255.255.255"),68);
                 
                 try {
                     socketPuerto67.send(dp);
@@ -58,16 +65,41 @@ public class Datos {
         return mensajeDHCP;
     }
     public MensajeDHCP generarDHCPOffer(MensajeDHCP mensajeCliente){
-            /*Obtener la cabecera y las opciones de la oferta de ip
-            le debe ofrecer la ip  172.16.1.120, con máscara de red 255.255.255.0, router 172.16.1.1 y servidor DNS
-            8.8.8.8. El tiempo de cesión será de 60 segundos, y el tiempo de renovación será la mitad. El
-            servidor debe tener en su configuración la dirección IP de la interfaz a la que debe
-            conectarse el ServerSocket.*/
-
-            byte[] cabeceraRespuesta=generarCabeceraNoRenovacion(mensajeCliente);
-            return mensajeDHCPOffer;
+        byte[] cabeceraRespuesta=generarCabeceraNoRenovacion(mensajeCliente);
+        byte[] opcionesRespuesta=generarOpcionesOffer();
+        MensajeDHCP mensajeDHCPOffer=montarMensaje(cabeceraRespuesta,opcionesRespuesta);
+        return mensajeDHCPOffer;
+    }    
+    public MensajeDHCP generarDHCPRequest(MensajeDHCP mensajeCliente){
+        byte[] cabeceraRequest=generarCabeceraNoRenovacion(mensajeCliente);
+        boolean ack=comprobarIPSolicitda(mensajeCliente);
+        byte[] opcionesRequest=generarOpcionesRequest(ack);
+        MensajeDHCP mensajeDHCPRequest=montarMensaje(cabeceraRequest,opcionesRequest);
+        return mensajeDHCPRequest;
+    
     }
-    private byte[] generarCabeceraNoRenovacion(MensajeDHCP mensajeCliente){
+    private MensajeDHCP montarMensaje(byte[] cabecera,byte[] opciones){
+        ByteBuffer bbMensaje= ByteBuffer.allocate(576);
+        bbMensaje.put(cabecera);
+        bbMensaje.put(opciones);
+        byte[] datosMensaje=bbMensaje.array();
+        MensajeDHCP mensaje=new MensajeDHCP(datosMensaje);
+        return mensaje;
+    }
+    private boolean comprobarIPSolicitda(MensajeDHCP mensaje){
+        byte[] requestedIP=mensaje.extraerOpcion(codigos.get("Requested IP"));
+        int host=requestedIP[3] & 0xFF;
+        boolean ipCorrecta=false;
+
+        mensaje.imprimirArrayDeBytes(requestedIP);
+        if(!direccionesEnUso.contains(host)){
+            ipCorrecta=true;
+        }else{
+            ++IDHost;
+        }
+        return ipCorrecta;
+    }    
+     private byte[] generarCabeceraNoRenovacion(MensajeDHCP mensajeCliente){
         ByteBuffer bbCabecera=ByteBuffer.allocate(236);
             bbCabecera.put((byte)2);
             bbCabecera.put((byte)1);
@@ -88,7 +120,9 @@ public class Datos {
             bbCabecera.put((byte)172);
             bbCabecera.put((byte)16);
             bbCabecera.put((byte)1);
-            bbCabecera.put((byte)120);
+            bbCabecera.put((byte)IDHost);
+
+            
             //siguiente servidor dhcp (0)
             for(int i=0;i<8;++i){
                 bbCabecera.put((byte)0);
@@ -103,9 +137,139 @@ public class Datos {
     }
     private byte[] generarOpcionesOffer(){
         ByteBuffer bbOpciones=ByteBuffer.allocate(236);
+        //magicCookie
             bbOpciones.put((byte)99);
             bbOpciones.put((byte)130);
             bbOpciones.put((byte)83);
             bbOpciones.put((byte)99);
+            //tipo de mensaje offer
+            bbOpciones.put((byte)53);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)2);
+            //mascara 255.255.255.0
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)0);
+            //ip dns
+            bbOpciones.put((byte)6);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            //ip Router
+            bbOpciones.put((byte)3);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)172);
+            bbOpciones.put((byte)16);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)1);
+            //tiempo de cesion seg
+            bbOpciones.put((byte)51);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)60);
+            //renovacion
+            bbOpciones.put((byte)58);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)30);
+            //ip servidor
+            bbOpciones.put((byte)54);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)192);
+            bbOpciones.put((byte)168);
+            bbOpciones.put((byte)5);
+            bbOpciones.put((byte)50);
+            bbOpciones.put((byte)255);
+            
+            
+            bbOpciones.put((byte)255);
+            if(bbOpciones.hasRemaining()){
+                bbOpciones.put((byte)0);
+            }
+            byte[] opcionesRespuesta=bbOpciones.array();
+            return opcionesRespuesta;
     }
+    private byte[] generarOpcionesRequest(boolean ack){
+        ByteBuffer bbOpciones=ByteBuffer.allocate(236);
+            bbOpciones.put((byte)99);
+            bbOpciones.put((byte)130);
+            bbOpciones.put((byte)83);
+            bbOpciones.put((byte)99);
+            //tipo de mensaje offer
+            bbOpciones.put((byte)53);
+            bbOpciones.put((byte)1);
+            if(ack){
+            //ack
+                bbOpciones.put((byte)5);
+                direccionesEnUso.add(IDHost);
+            }
+            else{
+                //nak
+                bbOpciones.put((byte)6);
+            }
+            //mascara 255.255.255.0
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)255);
+            bbOpciones.put((byte)0);
+            //ip dns
+            bbOpciones.put((byte)6);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            bbOpciones.put((byte)8);
+            //ip Router
+            bbOpciones.put((byte)3);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)172);
+            bbOpciones.put((byte)16);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)1);
+                        //tiempo de cesion seg
+            bbOpciones.put((byte)51);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)60);
+            //renovacion
+            bbOpciones.put((byte)58);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)0);
+            bbOpciones.put((byte)30);
+            //end
+            bbOpciones.put((byte)255);
+            if(bbOpciones.hasRemaining()){
+                bbOpciones.put((byte)0);
+            }
+            byte[] opcionesRespuesta=bbOpciones.array();
+            return opcionesRespuesta;
+    }
+        private HashMap<String,Integer> iniciarDiccionario(){
+        codigos=new HashMap<>();
+        codigos.put("Tipo de Mensaje",53);
+        codigos.put("Mascara",1);
+        codigos.put("Servidor DNS",6);
+        codigos.put("Router",3);
+        codigos.put("Requested IP",50);
+        codigos.put("Tiempo de cesion",51);
+        codigos.put("Tiempo de renovacion",58);
+        codigos.put("Identificador del servidor",54);
+        return codigos;
+    }
+    
 }
