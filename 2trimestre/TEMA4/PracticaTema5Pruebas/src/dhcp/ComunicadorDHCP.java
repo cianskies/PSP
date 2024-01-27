@@ -39,34 +39,37 @@ public class ComunicadorDHCP implements Runnable{
     }
     @Override
     public void run(){
-        while(true){
         interpretarMensaje(this.mensajeCliente);
-        this.mensajeCliente=datos.recibirNuevoMensajeDHCP();
-        }
+        System.out.println("termina un hilo");
+       
     }
     public void interpretarMensaje(MensajeDHCP mensaje){
         //Lo primero para interpretar un mensaje es saber 
         //que tipo de mensaje se trata (opcion 53)
+        System.out.println("un nuevo hilo atiende un mensaje");
         this.tipoDeMensaje=mensaje.extraerOpcion(datos.codigos.get("Tipo de Mensaje"));
+        if(mensaje.getIPCabecera()[0]!=0){
+            System.out.println("Se esta solicitando renovacion");
+            this.tipoDeMensaje[0]=(byte)04;
+        }
         MensajeDHCP mensajeRespuesta=null;
         switch(this.tipoDeMensaje[0] & 0xFF){
             case 1:
                 //Discover
+                System.out.println("Discover");
                 mensajeRespuesta=datos.generarDHCPOffer(mensajeCliente);
                 break;
             case 3: 
                 //request
+                System.out.println("Request");
                 mensajeRespuesta=datos.generarDHCPRequest(mensajeCliente);
-            default:
-                //Request
-                System.out.println("bye");
+                break;
+            case 4:
+                System.out.println("Renovacion");
+                //mensajeRespuesta=datos.generarDHCPRenovacion(mensajeCliente);
                 break;
         }       
-        if(mensajeRespuesta!=null){
             datos.enviarMensaje(mensajeRespuesta);
-        }else{
-            System.out.println("fok");
-        }
         
     }  
 

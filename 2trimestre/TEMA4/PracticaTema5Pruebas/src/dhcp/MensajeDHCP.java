@@ -19,6 +19,7 @@ public class MensajeDHCP {
     
     private byte[] XID;
     private byte[] MAC;
+    private byte[] IPCabecera;
     
     
     
@@ -28,6 +29,7 @@ public class MensajeDHCP {
         this.opciones=getOpcionesMsj(datos);
         this.XID=identificarXID(cabecera);
         this.MAC=identificarMAC(cabecera);
+        this.IPCabecera=identificarIPCabecera(cabecera);
         
     }
     public byte[] getDatos(){
@@ -39,9 +41,12 @@ public class MensajeDHCP {
     public byte[] getMAC(){
         return MAC;
     }
+    public byte[] getIPCabecera(){
+        return IPCabecera;
+    }
     public byte[] getCabeceraMsj(byte[] datos){
         byte[] cabecera=extraerDeByteArray(datos,0,236);
-        imprimirArrayDeBytes(cabecera);
+        
         return cabecera;
     }
     public byte[] getOpcionesMsj(byte[] datos){
@@ -66,8 +71,6 @@ public class MensajeDHCP {
         for(int i=0;i<opciones.length&&((opciones[i] & 0xFF)!=codigo);++i){
             ++offset;
         }
-        System.out.println(opciones[offset] & 0xFF);
-        
         return offset;
     }
     private byte[] extraerDeByteArray(byte[] array,int offset, int longitud){
@@ -78,13 +81,16 @@ public class MensajeDHCP {
     }
     private byte[] identificarXID(byte[] cabecera){
         byte[] xid=extraerDeByteArray(cabecera,4,4);
-        System.out.println("xid:");
         return xid;
         
     }
     private byte[] identificarMAC(byte[] cabecera){
         byte[] mac=extraerDeByteArray(cabecera,28,16);
         return mac;
+    }
+    private byte[] identificarIPCabecera(byte[] cabecera){
+       byte[] mac=extraerDeByteArray(cabecera,12,4);
+        return mac; 
     }
     public void imprimirArrayDeBytes(byte[] array){
         for(byte b:array){

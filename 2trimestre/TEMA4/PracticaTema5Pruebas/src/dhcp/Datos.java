@@ -14,6 +14,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,12 +27,12 @@ public class Datos {
     private DatagramSocket socketPuerto67;
     //el rango de ip debe ser 172.16.1.120-172.16.1.255
     private int IDHost=120;
-    private ArrayList<Integer> direccionesEnUso;
+    HashMap<Integer,byte[]> direccionesEnUso;
     
     public Datos(DatagramSocket socketPuerto67){
         this.socketPuerto67=socketPuerto67;
         codigos=iniciarDiccionario();
-        this.direccionesEnUso=new ArrayList<>();
+        direccionesEnUso=new HashMap<Integer,byte[]>();
     }
     public void enviarMensaje(MensajeDHCP mensaje){
             try {
@@ -73,7 +74,7 @@ public class Datos {
     public MensajeDHCP generarDHCPRequest(MensajeDHCP mensajeCliente){
         byte[] cabeceraRequest=generarCabeceraNoRenovacion(mensajeCliente);
         boolean ack=comprobarIPSolicitda(mensajeCliente);
-        byte[] opcionesRequest=generarOpcionesRequest(ack);
+        byte[] opcionesRequest=generarOpcionesRequest(ack,mensajeCliente);
         MensajeDHCP mensajeDHCPRequest=montarMensaje(cabeceraRequest,opcionesRequest);
         return mensajeDHCPRequest;
     
@@ -92,10 +93,18 @@ public class Datos {
         boolean ipCorrecta=false;
 
         mensaje.imprimirArrayDeBytes(requestedIP);
-        if(!direccionesEnUso.contains(host)){
-            ipCorrecta=true;
-        }else{
+        for(Map.Entry<Integer,byte[]> item:direccionesEnUso.entrySet()){
+            if(item.getKey()!=host&&item.getValue()!=mensaje.getMAC()){
+                ipCorrecta=true;
+               
+            }
+        }
+        if(!ipCorrecta){
+            
             ++IDHost;
+            System.out.println("++idHost "+IDHost);
+        }else{
+            System.
         }
         return ipCorrecta;
     }    
@@ -198,7 +207,7 @@ public class Datos {
             byte[] opcionesRespuesta=bbOpciones.array();
             return opcionesRespuesta;
     }
-    private byte[] generarOpcionesRequest(boolean ack){
+    private byte[] generarOpcionesRequest(boolean ack, MensajeDHCP mensaje){
         ByteBuffer bbOpciones=ByteBuffer.allocate(236);
             bbOpciones.put((byte)99);
             bbOpciones.put((byte)130);
@@ -210,10 +219,12 @@ public class Datos {
             if(ack){
             //ack
                 bbOpciones.put((byte)5);
-                direccionesEnUso.add(IDHost);
+                direccionesEnUso.put(IDHost,mensaje.getMAC());
+                System.out.println("Se añade "+IDHost+" "+mensaje.getMAC());
             }
             else{
                 //nak
+                System.out.println("nak");
                 bbOpciones.put((byte)6);
             }
             //mascara 255.255.255.0
@@ -259,7 +270,10 @@ public class Datos {
             byte[] opcionesRespuesta=bbOpciones.array();
             return opcionesRespuesta;
     }
-        private HashMap<String,Integer> iniciarDiccionario(){
+    public byte[] generarDHCPRenovacion(MensajeDHCP mensaje){
+        return null;
+    }
+    private HashMap<String,Integer> iniciarDiccionario(){
         codigos=new HashMap<>();
         codigos.put("Tipo de Mensaje",53);
         codigos.put("Mascara",1);

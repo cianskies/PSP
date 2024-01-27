@@ -24,6 +24,7 @@ public class Servidor {
             Datos datos=new Datos(socketPuerto67);
 
             //Almacenar el mensaje
+            while(true){
             byte[] bufferMensaje=new byte[1024];
             DatagramPacket dpMensaje=new DatagramPacket(bufferMensaje,bufferMensaje.length);
             socketPuerto67.receive(dpMensaje);
@@ -33,7 +34,13 @@ public class Servidor {
             MensajeDHCP mensajeDHCP=new MensajeDHCP(bufferMensaje);
             Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos));
             comunicador.run();
-            
+                try {
+                    comunicador.join();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println("El servidor vuelve a estar disponible");
+            }
             
          }catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
