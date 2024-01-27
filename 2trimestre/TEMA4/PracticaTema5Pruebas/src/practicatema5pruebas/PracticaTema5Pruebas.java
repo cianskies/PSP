@@ -10,7 +10,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+<<<<<<< HEAD
+=======
 import java.util.List;
+>>>>>>> 2ed0fdeb942a71e0cf4f192a6caa22223480a706
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,10 +45,12 @@ public class PracticaTema5Pruebas {
             DatagramPacket dpMensaje=new DatagramPacket(bufferMensaje,bufferMensaje.length);
             dSocket.receive(dpMensaje);
             bufferMensaje=dpMensaje.getData();
-            //Vamos a pasar el mensaje a Decimal para poder leerlo en condiciones
-            boolean mCookie=false;
-            StringBuilder stringBuilder=new StringBuilder();
+            boolean magicCookieDetectada=false;
+            
+            int[] bytesLeidos=new int[4];
             int contador=0;
+<<<<<<< HEAD
+=======
             
             boolean codigo=false;
             boolean longitud= false;
@@ -101,7 +106,55 @@ public class PracticaTema5Pruebas {
                    }
                    
                 }
+>>>>>>> 2ed0fdeb942a71e0cf4f192a6caa22223480a706
 
+            int codigo=0;
+            ArrayList<Integer> codigos=new ArrayList<>();
+            ArrayList<Integer> mensajes=new ArrayList<>();
+            int longitudMensaje=0;
+            for(byte b:bufferMensaje){
+                if(!magicCookieDetectada){
+                    int byteDecimal=b & 0xFF;
+                    bytesLeidos[contador]=byteDecimal;
+                    ++contador;
+                    if(contador==4){
+                        System.out.println("Se han leido 4 bytes: ");
+                        for(int i=0;i<bytesLeidos.length;++i){
+                            System.out.println(bytesLeidos[i]); 
+                        }
+                        if(bytesLeidos[0]==99
+                                &&bytesLeidos[1]==130
+                                    &&bytesLeidos[2]==83
+                                        &&bytesLeidos[3]==99){
+                            magicCookieDetectada=true;
+                            
+                        }
+                        contador=0;
+                    }
+                }else{
+                    ///
+                    
+                    int byteDecimal=b & 0xFF;
+                    if(codigo==0){
+                        codigo=byteDecimal;
+                        System.out.println("Codigo:" +codigo);
+                    }else if(longitudMensaje==0){
+                        longitudMensaje=byteDecimal;
+                        System.out.println("longitud: "+longitudMensaje);
+                    }
+                    else if(longitudMensaje>contador){
+                       System.out.print(byteDecimal);
+                        ++contador;
+                    }else{
+                        System.out.println();
+                        System.out.println("escritos "+contador+"caracteres");
+                        System.out.println("//////////");
+                        longitudMensaje=0;
+                        codigo=0;
+                    }
+                    
+                    
+                }
             }
         } catch (SocketException ex) {
             Logger.getLogger(PracticaTema5Pruebas.class.getName()).log(Level.SEVERE, null, ex);
@@ -109,6 +162,30 @@ public class PracticaTema5Pruebas {
             Logger.getLogger(PracticaTema5Pruebas.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+<<<<<<< HEAD
+    /*                if(contador==4){
+                    System.out.println(new String(stringBuilder));
+                    contador=0;
+                    stringBuilder=new StringBuilder();
+                }
+                int decimal=b & 0xFF;
+                stringBuilder.append(decimal);
+                ++contador;*/
+    /*                }else{
+                   int codigo=b & 0xFF;
+                   System.out.println("Codigo del mensaje: "+codigo);
+                   int longitud= b & 0xFF;
+                   System.out.println("Longitud del mensaje: "+longitud);
+                   for(int i=0;i<longitud;++i){
+                       int byteMensaje=b & 0xFF;
+                       System.out.print(byteMensaje);
+                   }
+                   System.out.println();
+                   
+                }
+*/
+    
+=======
     private static void comprobarCodigo(byte[] mensaje,int codigo, int longitud){
         switch(codigo){
             case 53:
@@ -145,4 +222,5 @@ public class PracticaTema5Pruebas {
                 break;
         }
     }
+>>>>>>> 2ed0fdeb942a71e0cf4f192a6caa22223480a706
 }
