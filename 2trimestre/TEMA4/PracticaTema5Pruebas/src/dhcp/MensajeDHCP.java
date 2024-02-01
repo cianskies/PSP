@@ -21,8 +21,6 @@ public class MensajeDHCP {
     private byte[] MAC;
     private byte[] IPCabecera;
     
-    
-    
     public MensajeDHCP(byte[] datos){
         this.datos=datos;
         this.cabecera=getCabeceraMsj(datos);
@@ -90,6 +88,7 @@ public class MensajeDHCP {
     }
     private byte[] identificarIPCabecera(byte[] cabecera){
        byte[] mac=extraerDeByteArray(cabecera,12,4);
+       
         return mac; 
     }
     public void imprimirArrayDeBytes(byte[] array){

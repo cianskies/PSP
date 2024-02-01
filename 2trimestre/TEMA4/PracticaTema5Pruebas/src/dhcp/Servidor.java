@@ -17,34 +17,47 @@ import java.util.logging.Logger;
  * @author Administrador
  */
 public class Servidor {
+    public static DatagramSocket socketPuerto67;
     public static void main(String[] args){
          try {
             //Lo primero seria detectar el mensaje que llega al puerto 68/67
-            DatagramSocket socketPuerto67=new DatagramSocket(67);
+            socketPuerto67=new DatagramSocket(67);
             Datos datos=new Datos(socketPuerto67);
 
             //Almacenar el mensaje
             while(true){
-            byte[] bufferMensaje=new byte[1024];
-            DatagramPacket dpMensaje=new DatagramPacket(bufferMensaje,bufferMensaje.length);
-            socketPuerto67.receive(dpMensaje);
-            System.out.println("Ok");
-            bufferMensaje=dpMensaje.getData();
-            
-            MensajeDHCP mensajeDHCP=new MensajeDHCP(bufferMensaje);
-            Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos));
-            comunicador.run();
-                try {
-                    comunicador.join();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+                MensajeDHCP mensajeDHCP=recibirNuevoMensajeDHCP();
+                //aqui debe comprobar si la mac o el xid lo esta utilizando algun hilo
+                //si no lo esta usando ninguno, crea un nuevo comunicador dhcp.
+                //Si hay uno usandolo, enviarslo a datos.
+                if(datos.comprobarTransaccion(mensajeDHCP.getXID())){
+                    Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos));
+                    
+                    comunicador.start();
+                }else{
+                    datos.almacenarMensajeDHCP(mensajeDHCP);
                 }
-                System.out.println("El servidor vuelve a estar disponible");
+            
+
+
             }
             
          }catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-}
+    public static synchronized MensajeDHCP recibirNuevoMensajeDHCP() {
+        byte[] bufferMensaje=new byte[1024];
+        DatagramPacket dpMensaje=new DatagramPacket(bufferMensaje,bufferMensaje.length);
+        try {
+            socketPuerto67.receive(dpMensaje);
+        } catch (IOException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            System.out.println("Ok");
+            bufferMensaje=dpMensaje.getData();
+            MensajeDHCP mensajeDHCP=new MensajeDHCP(bufferMensaje);
+            return mensajeDHCP;
+                        
+        }
+    }
