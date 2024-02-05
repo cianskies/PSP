@@ -23,6 +23,7 @@ public class Servidor {
             //Lo primero seria detectar el mensaje que llega al puerto 68/67
             socketPuerto67=new DatagramSocket(67);
             Datos datos=new Datos(socketPuerto67);
+            int contador=0;
 
             //Almacenar el mensaje
             while(true){
@@ -30,8 +31,9 @@ public class Servidor {
                 //aqui debe comprobar si la mac o el xid lo esta utilizando algun hilo
                 //si no lo esta usando ninguno, crea un nuevo comunicador dhcp.
                 //Si hay uno usandolo, enviarslo a datos.
-                if(datos.comprobarTransaccion(mensajeDHCP.getXID())){
-                    Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos));
+                if(datos.comprobarTransaccion(mensajeDHCP.getMAC())){
+                    Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos,contador));
+                    ++contador;
                     
                     comunicador.start();
                 }else{

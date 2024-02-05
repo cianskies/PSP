@@ -245,7 +245,7 @@ public class Datos {
             //ack
                 bbOpciones.put((byte)5);
                 direccionesEnUso.put(IDHost,mensaje.getMAC());
-                System.out.println("Se añade "+IDHost+" "+mensaje.getMAC());
+                System.out.println("Se añade "+IDHost+" "+new String(mensaje.getMAC()));
                 ++IDHost;
             }
             else{
@@ -389,35 +389,35 @@ public class Datos {
         }
         return transaccionLibre;
     }
-    public synchronized void anhadirXID(byte[] xid){
-        transaccionesActuales.add(xid);
-        System.out.println("Se añade "+new String(xid));
+    public synchronized void anhadirMAC(byte[] mac){
+        transaccionesActuales.add(mac);
+        System.out.println("Se añade "+new String(mac));
     }
-    public synchronized void eliminarXID(byte[] xid){
-        boolean XIDeliminado=false;
+    public synchronized void eliminarMAC(byte[] mac){
+        boolean MACeliminado=false;
         Iterator<byte[]> it=transaccionesActuales.iterator();
-        while(it.hasNext()&&!XIDeliminado){
+        while(it.hasNext()&&!MACeliminado){
             byte[] elemento=it.next();
-            if(new String(elemento).equals(new String(xid))){
+            if(new String(elemento).equals(new String(mac))){
                 
-                System.out.println("Se elimina "+elemento.toString());
+                System.out.println("Se elimina "+new String(elemento));
                 it.remove();
-                XIDeliminado=true;
+                MACeliminado=true;
             }
         }
     }
     public synchronized void almacenarMensajeDHCP(MensajeDHCP mensaje){
         pilaMensajes.add(mensaje);
-        System.out.println("Se almacena "+mensaje.toString()+" con el id "+new String(mensaje.getXID()));
+        System.out.println("Se almacena "+mensaje.toString()+" con el mac "+new String(mensaje.getMAC()));
         notifyAll();
     }
-    public synchronized MensajeDHCP recogerMensaje(byte[] XID){
+    public synchronized MensajeDHCP recogerMensaje(byte[] MAC){
         MensajeDHCP recogido=null;
         boolean mensajeRecogido=false;
         Iterator<MensajeDHCP> it=pilaMensajes.iterator();
         while(it.hasNext()&&!mensajeRecogido){
             MensajeDHCP elemento=it.next();
-            if(new String(elemento.getXID()).equals(new String(XID))){
+            if(new String(elemento.getMAC()).equals(new String(MAC))){
                 recogido=elemento;
                 System.out.println("Se recoge "+recogido.toString());
                 it.remove();
@@ -428,7 +428,7 @@ public class Datos {
     }
     public synchronized void zzz(){
         try {
-            System.out.println("Me voy a echar una siesta");
+            
             wait();
         } catch (InterruptedException ex) {
             Logger.getLogger(Datos.class.getName()).log(Level.SEVERE, null, ex);
