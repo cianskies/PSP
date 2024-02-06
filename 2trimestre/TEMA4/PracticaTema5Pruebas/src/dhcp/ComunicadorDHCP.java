@@ -35,12 +35,14 @@ public class ComunicadorDHCP implements Runnable{
         this.datos=datos;
         this.acabar=false;
         this.id=id;
+        MAC=mensajeCliente.getMAC();
+        datos.anhadirMAC(MAC);
     }
     @Override
     public void run(){
-        MAC=mensajeCliente.getMAC();
+        
         System.out.println("un nuevo hilo atiende un mensaje "+new String(mensajeCliente.getMAC()));
-        datos.anhadirMAC(MAC);
+        
        
         interpretarMensaje(this.mensajeCliente);
         if((tipoDeMensaje[0] & 0xFF)==1){
@@ -52,7 +54,7 @@ public class ComunicadorDHCP implements Runnable{
         if(!acabar){  
             
             MensajeDHCP mensajeRecogido=null;
-            while(mensajeCliente==null||(tipoDeMensaje[0] & 0xFF)==1){
+            
                  System.out.println(id+ " Se pide un msj  "+new String(MAC));
                   mensajeRecogido=datos.recogerMensaje(MAC);
          
@@ -69,7 +71,7 @@ public class ComunicadorDHCP implements Runnable{
                      datos.zzz();
                      
                  }
-            }
+            
         }
                  
         
@@ -86,10 +88,7 @@ public class ComunicadorDHCP implements Runnable{
         
         this.tipoDeMensaje=mensaje.extraerOpcion(datos.codigos.get("Tipo de Mensaje"));
         
-        if(mensaje.getIPCabecera()[0]!=0){
-            System.out.println(id+" esta solicitando renovacion "+new String(mensajeCliente.getMAC()));
-            this.tipoDeMensaje[0]=(byte)04;
-        }
+        
         MensajeDHCP mensajeRespuesta=null;
         switch(this.tipoDeMensaje[0] & 0xFF){
             case 1:
@@ -103,19 +102,21 @@ public class ComunicadorDHCP implements Runnable{
                 System.out.println(id+"Request "+new String(mensajeCliente.getMAC()));
                
                  acabar=true;
-                mensajeRespuesta=datos.generarDHCPRequest(mensajeCliente);
-                
-               
+                 if(mensaje.getIPCabecera()[0]!=0){
+                    System.out.println(id+" esta solicitando renovacion "+new String(mensajeCliente.getMAC()));
+                    mensajeRespuesta=datos.generarDHCPRenovacion(mensajeCliente);
+                 }else{
+                    System.out.println("Generar DHCP Request normal");
+                    mensajeRespuesta=datos.generarDHCPRequest(mensajeCliente);
+                }
                 break;
-            case 4:
-                System.out.println("Renovacion "+new String(mensajeCliente.getMAC()));
-                
-                acabar=true;
-                mensajeRespuesta=datos.generarDHCPRenovacion(mensajeCliente);
-                
+            default:
                 break;
         }       
-            datos.enviarMensaje(mensajeRespuesta);
+        if(mensajeRespuesta!=null){
+           datos.enviarMensaje(mensajeRespuesta); 
+        }
+            
         
     }  
 

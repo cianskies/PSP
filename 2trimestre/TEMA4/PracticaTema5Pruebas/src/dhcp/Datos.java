@@ -56,7 +56,7 @@ public class Datos {
             }
             System.out.println("Se envia un msj");
     }
-    public synchronized MensajeDHCP recibirNuevoMensajeDHCP(){
+    public MensajeDHCP recibirNuevoMensajeDHCP(){
       byte[] bufferMensaje=new byte[1024];
             DatagramPacket dpMensaje=new DatagramPacket(bufferMensaje,bufferMensaje.length);
             try {
@@ -70,13 +70,13 @@ public class Datos {
         MensajeDHCP mensajeDHCP=new MensajeDHCP(bufferMensaje); 
         return mensajeDHCP;
     }
-    public synchronized MensajeDHCP generarDHCPOffer(MensajeDHCP mensajeCliente){
+    public MensajeDHCP generarDHCPOffer(MensajeDHCP mensajeCliente){
         byte[] cabeceraRespuesta=generarCabeceraNoRenovacion(mensajeCliente);
         byte[] opcionesRespuesta=generarOpcionesOffer();
         MensajeDHCP mensajeDHCPOffer=montarMensaje(cabeceraRespuesta,opcionesRespuesta);
         return mensajeDHCPOffer;
     }    
-    public synchronized MensajeDHCP generarDHCPRequest(MensajeDHCP mensajeCliente){
+    public MensajeDHCP generarDHCPRequest(MensajeDHCP mensajeCliente){
         byte[] cabeceraRequest=generarCabeceraNoRenovacion(mensajeCliente);
         boolean ack=comprobarIPSolicitda(mensajeCliente.extraerOpcion(codigos.get("Requested IP")),mensajeCliente.getMAC());
         byte[] opcionesRequest=generarOpcionesRequest(ack,mensajeCliente);
@@ -84,7 +84,7 @@ public class Datos {
         return mensajeDHCPRequest;
     
     }
-    private synchronized MensajeDHCP montarMensaje(byte[] cabecera,byte[] opciones){
+    private MensajeDHCP montarMensaje(byte[] cabecera,byte[] opciones){
         ByteBuffer bbMensaje= ByteBuffer.allocate(576);
         bbMensaje.put(cabecera);
         bbMensaje.put(opciones);
@@ -92,7 +92,7 @@ public class Datos {
         MensajeDHCP mensaje=new MensajeDHCP(datosMensaje);
         return mensaje;
     }
-    private synchronized boolean comprobarIPSolicitda(byte[] IP,byte[] MAC){
+    private boolean comprobarIPSolicitda(byte[] IP,byte[] MAC){
         int host=IP[3] & 0xFF;
         boolean ipCorrecta=true;
         for(Map.Entry<Integer,byte[]> item:direccionesEnUso.entrySet()){
@@ -114,7 +114,7 @@ public class Datos {
         }
         return ipCorrecta;
     }    
-     private synchronized byte[] generarCabeceraNoRenovacion(MensajeDHCP mensajeCliente){
+     private byte[] generarCabeceraNoRenovacion(MensajeDHCP mensajeCliente){
         ByteBuffer bbCabecera=ByteBuffer.allocate(236);
             bbCabecera.put((byte)2);
             bbCabecera.put((byte)1);
@@ -150,7 +150,7 @@ public class Datos {
             byte[] cabeceraRespuesta=bbCabecera.array();
             return cabeceraRespuesta;
     }
-     private synchronized byte[] generarCabeceraSIRenovacion(MensajeDHCP mensajeCliente){
+     private byte[] generarCabeceraSIRenovacion(MensajeDHCP mensajeCliente){
         ByteBuffer bbCabecera=ByteBuffer.allocate(236);
             bbCabecera.put((byte)2);
             bbCabecera.put((byte)1);
@@ -183,7 +183,7 @@ public class Datos {
             byte[] cabeceraRespuesta=bbCabecera.array();
             return cabeceraRespuesta;
     }
-    private synchronized byte[] generarOpcionesOffer(){
+    private byte[] generarOpcionesOffer(){
         ByteBuffer bbOpciones=ByteBuffer.allocate(236);
         //magicCookie
             bbOpciones.put((byte)99);
@@ -218,12 +218,18 @@ public class Datos {
             //ip servidor
             bbOpciones.put((byte)54);
             bbOpciones.put((byte)4);
-            bbOpciones.put((byte)192);
-            bbOpciones.put((byte)168);
-            bbOpciones.put((byte)5);
-            bbOpciones.put((byte)50);
-            bbOpciones.put((byte)255);
-            
+            bbOpciones.put((byte)172);
+            bbOpciones.put((byte)16);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)2);
+            //cesion
+            bbOpciones.put((byte)51);
+            bbOpciones.put((byte)4);
+            bbOpciones.putInt(60);
+            //renovacion
+            bbOpciones.put((byte)58);
+            bbOpciones.put((byte)4);
+            bbOpciones.putInt(30);
             
             bbOpciones.put((byte)255);
             if(bbOpciones.hasRemaining()){
@@ -232,7 +238,7 @@ public class Datos {
             byte[] opcionesRespuesta=bbOpciones.array();
             return opcionesRespuesta;
     }
-    private synchronized byte[] generarOpcionesRequest(boolean ack, MensajeDHCP mensaje){
+    private byte[] generarOpcionesRequest(boolean ack, MensajeDHCP mensaje){
         ByteBuffer bbOpciones=ByteBuffer.allocate(236);
             bbOpciones.put((byte)99);
             bbOpciones.put((byte)130);
@@ -274,20 +280,23 @@ public class Datos {
             bbOpciones.put((byte)16);
             bbOpciones.put((byte)1);
             bbOpciones.put((byte)1);
-                        //tiempo de cesion seg
+            //ip servidor
+            bbOpciones.put((byte)54);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)172);
+            bbOpciones.put((byte)16);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)2);
+            
+            //cesion
             bbOpciones.put((byte)51);
             bbOpciones.put((byte)4);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)30);
+            bbOpciones.putInt(60);
             //renovacion
             bbOpciones.put((byte)58);
             bbOpciones.put((byte)4);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)15);
+            bbOpciones.putInt(30);
+            
             //end
             bbOpciones.put((byte)255);
             if(bbOpciones.hasRemaining()){
@@ -296,7 +305,7 @@ public class Datos {
             byte[] opcionesRespuesta=bbOpciones.array();
             return opcionesRespuesta;
     }
-    private synchronized byte[] generarOpcionesRenovacion(MensajeDHCP mensaje,boolean ack){
+    private byte[] generarOpcionesRenovacion(MensajeDHCP mensaje,boolean ack){
         ByteBuffer bbOpciones=ByteBuffer.allocate(236);
             bbOpciones.put((byte)99);
             bbOpciones.put((byte)130);
@@ -336,20 +345,23 @@ public class Datos {
             bbOpciones.put((byte)16);
             bbOpciones.put((byte)1);
             bbOpciones.put((byte)1);
-                        //tiempo de cesion seg
+            //ip servidor
+            bbOpciones.put((byte)54);
+            bbOpciones.put((byte)4);
+            bbOpciones.put((byte)172);
+            bbOpciones.put((byte)16);
+            bbOpciones.put((byte)1);
+            bbOpciones.put((byte)2);
+            
+                        //cesion
             bbOpciones.put((byte)51);
             bbOpciones.put((byte)4);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)30);
+            bbOpciones.putInt(60);
             //renovacion
             bbOpciones.put((byte)58);
             bbOpciones.put((byte)4);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)0);
-            bbOpciones.put((byte)15);
+            bbOpciones.putInt(30);
+            
             //end
             bbOpciones.put((byte)255);
             if(bbOpciones.hasRemaining()){
@@ -358,7 +370,7 @@ public class Datos {
             byte[] opcionesRespuesta=bbOpciones.array();
             return opcionesRespuesta;
     }
-    public synchronized MensajeDHCP generarDHCPRenovacion(MensajeDHCP mensaje){
+    public MensajeDHCP generarDHCPRenovacion(MensajeDHCP mensaje){
         byte[] IP=mensaje.getIPCabecera();
         byte[] MAC=mensaje.getMAC();
         boolean ack=comprobarIPSolicitda(IP,MAC);
@@ -389,11 +401,11 @@ public class Datos {
         }
         return transaccionLibre;
     }
-    public synchronized void anhadirMAC(byte[] mac){
+    public void anhadirMAC(byte[] mac){
         transaccionesActuales.add(mac);
         System.out.println("Se añade "+new String(mac));
     }
-    public synchronized void eliminarMAC(byte[] mac){
+    public void eliminarMAC(byte[] mac){
         boolean MACeliminado=false;
         Iterator<byte[]> it=transaccionesActuales.iterator();
         while(it.hasNext()&&!MACeliminado){
@@ -411,7 +423,7 @@ public class Datos {
         System.out.println("Se almacena "+mensaje.toString()+" con el mac "+new String(mensaje.getMAC()));
         notifyAll();
     }
-    public synchronized MensajeDHCP recogerMensaje(byte[] MAC){
+    public MensajeDHCP recogerMensaje(byte[] MAC){
         MensajeDHCP recogido=null;
         boolean mensajeRecogido=false;
         Iterator<MensajeDHCP> it=pilaMensajes.iterator();
