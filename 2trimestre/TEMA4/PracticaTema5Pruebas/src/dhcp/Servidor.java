@@ -32,7 +32,7 @@ public class Servidor {
                 //si no lo esta usando ninguno, crea un nuevo comunicador dhcp.
                 //Si hay uno usandolo, enviarslo a datos.
                 if(datos.comprobarTransaccion(mensajeDHCP.getMAC())){
-                    System.err.println("lanzo el hilo "+mensajeDHCP.extraerOpcion(53));
+                    
                     Thread comunicador =new Thread(new ComunicadorDHCP(mensajeDHCP,datos,contador));
                     ++contador;
                     
@@ -57,7 +57,6 @@ public class Servidor {
         } catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
-            System.out.println("Ok");
             bufferMensaje=dpMensaje.getData();
             MensajeDHCP mensajeDHCP=new MensajeDHCP(bufferMensaje);
             return mensajeDHCP;

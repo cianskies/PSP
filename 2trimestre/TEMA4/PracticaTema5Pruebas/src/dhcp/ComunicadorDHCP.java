@@ -41,34 +41,34 @@ public class ComunicadorDHCP implements Runnable{
     @Override
     public void run(){
         
-        System.out.println("un nuevo hilo atiende un mensaje "+new String(mensajeCliente.getMAC()));
+        System.err.println("un nuevo hilo atiende un mensaje "+new String(mensajeCliente.getMAC()));
         
        
         interpretarMensaje(this.mensajeCliente);
         if((tipoDeMensaje[0] & 0xFF)==1){
-            System.out.println("Me duermo "+id);
+            //System.out.println("Me duermo "+id);
             datos.zzz();
         }
-        System.out.println(id+" Se despierta");
+        
         
         if(!acabar){  
             
             MensajeDHCP mensajeRecogido=null;
-            
-                 System.out.println(id+ " Se pide un msj  "+new String(MAC));
+            //System.out.println(id+" Se despierta");
+              // System.out.println(id+ " Se pide un msj  "+new String(MAC));
                   mensajeRecogido=datos.recogerMensaje(MAC);
          
                 
                  mensajeCliente=mensajeRecogido;
                  if(mensajeCliente!=null){
-                    System.out.println(id+ " recoge un mensaje con la mac "+new String(mensajeCliente.getMAC()));
+                //    System.out.println(id+ " recoge un mensaje con la mac "+new String(mensajeCliente.getMAC()));
                     interpretarMensaje(this.mensajeCliente);
                     
                  }
 
                  else{
-                     System.out.println(id+" No ha encontrado mensaje");
-                     datos.zzz();
+                    //System.out.println(id+" No ha encontrado mensaje");
+                     
                      
                  }
             
