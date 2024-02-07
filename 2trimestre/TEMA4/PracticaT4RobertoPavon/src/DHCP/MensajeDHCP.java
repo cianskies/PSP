@@ -1,5 +1,4 @@
 package DHCP;
-
 import java.nio.ByteBuffer;
 
 public class MensajeDHCP {
