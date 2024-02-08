@@ -16,6 +16,8 @@ public class MensajeDHCP {
 	private byte[] _mac;
 	private byte[] _IpCabecera;
 	private TipoMensaje _tipoDeMensaje;
+	private byte[] _requestedIp;
+	private byte[] _xid;
 
 	
 	public MensajeDHCP(byte[] datosMensaje) {
@@ -23,6 +25,8 @@ public class MensajeDHCP {
 		this._mac=identificarMac(this._datosMensaje);
 		this._IpCabecera=identificarIpCabecera(this._datosMensaje);
 		this._tipoDeMensaje=identificarTipoDeMensaje(this._datosMensaje);
+		this._requestedIp=identificarRequestedIp(this._datosMensaje);
+		this._xid=identificarXid(this._datosMensaje);
 	}
 	
 	public byte[] getDatos() {
@@ -40,6 +44,15 @@ public class MensajeDHCP {
 		return _tipoDeMensaje;
 	}
 	
+	public byte[] getRequestedIp() {
+		return this._requestedIp;
+	}
+	
+	public byte[] getXid() {
+		return _xid;
+	}
+	
+	//ESTO SEGURO K LO PUEDO HACER MAS LIMPIO CON UN DICCIONARIO PERO VAMOS SIN PROBLEMA
 	private byte[] identificarMac(byte[] datos) {
 		byte[] mac=extraerDeByteArray(datos,28,16);
 		return mac;
@@ -50,15 +63,13 @@ public class MensajeDHCP {
 		return ip;
 	}
 	
-	private byte[] extraerDeByteArray(byte[] array,int offset,int longitud) {
-		ByteBuffer bb=ByteBuffer.allocate(longitud);
-		bb.put(array,offset,longitud);
-		byte[] resultado=bb.array();
-		return resultado;
+	private byte[] identificarRequestedIp(byte[] datos) {
+		byte[] requestedIp=extraerOpcion(50);
+		return requestedIp;
 	}
 	
 	private TipoMensaje identificarTipoDeMensaje(byte[] datos) {
-		byte[] opcionTipoMensaje=extraerOpcion(50);
+		byte[] opcionTipoMensaje=extraerOpcion(53);
 		int tipoDeMensaje=opcionTipoMensaje[0] & 0xFF;
 		TipoMensaje tipo;
 		if(tipoDeMensaje==1) {
@@ -71,6 +82,19 @@ public class MensajeDHCP {
 			tipo=TipoMensaje.Otro;
 		}
 		return tipo;
+	}
+	
+	private byte[] identificarXid(byte[] datos) {
+		//copmrobar
+		byte[] xid=extraerDeByteArray(datos,4,4);
+		return xid;
+		
+	}
+	private byte[] extraerDeByteArray(byte[] array,int offset,int longitud) {
+		ByteBuffer bb=ByteBuffer.allocate(longitud);
+		bb.put(array,offset,longitud);
+		byte[] resultado=bb.array();
+		return resultado;
 	}
 	
 	private byte[] extraerOpcion(int codigo) {

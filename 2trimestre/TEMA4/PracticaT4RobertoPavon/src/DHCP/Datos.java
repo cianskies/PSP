@@ -246,7 +246,7 @@ public class Datos {
 		bb.put((byte)6);
 		bb.put((byte)0);
 		//CAMPO XID
-		bb.put(mensaje.getXID());
+		bb.put(mensaje.getXid());
 		//SECS
 		bb.put((byte)0);
 		bb.put((byte)0);
