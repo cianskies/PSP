@@ -1,5 +1,14 @@
 package DHCP;
 
+<<<<<<< HEAD
+public class ComunicadorDHCP implements Runnable {
+
+	
+	@Override
+	public void run() {
+		
+	}
+=======
 import DHCP.MensajeDHCP.TipoMensaje;
 
 public class ComunicadorDHCP implements Runnable{
@@ -66,4 +75,5 @@ public class ComunicadorDHCP implements Runnable{
 		}
 	}
 
+>>>>>>> 7eba26d5f16e1e3c66f0ec2968644044939fdd70
 }
