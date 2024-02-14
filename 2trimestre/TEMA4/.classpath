@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="PracticaTema5Pruebas/src/|PracticaT4RobertoPavon/src/|PracticaTema5Pruebas/src/dhcp/" kind="src" path=""/>
+	<classpathentry kind="src" path="PracticaT4RobertoPavon/src"/>
+	<classpathentry excluding="dhcp/" kind="src" path="PracticaTema5Pruebas/src"/>
+	<classpathentry kind="src" path="PracticaTema5Pruebas/src/dhcp"/>
+	<classpathentry kind="output" path="PracticaT4RobertoPavon/bin"/>
+</classpath>
