@@ -79,18 +79,14 @@ public class Encriptador {
 	
 	private static PublicKey extraerClavePublica(KeyStore almacen) {
 		PublicKey clavePublica=null;
-		try {
-			clavePublica = (PublicKey) almacen.getKey("pepe", "123qwe".toCharArray());
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+			try {
+				clavePublica = (PublicKey) almacen.getCertificate("pepe").getPublicKey();
+			} catch (KeyStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		return clavePublica;
 	}
 	
