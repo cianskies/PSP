@@ -20,7 +20,7 @@ public class Datos {
 	private DatagramSocket _socketPuerto67;
 	private ArrayList<byte[]> _macOcupadas;
 	
-	private int IDHost;
+	private int IDHost=119;
 	
 	HashMap<Integer,byte[]> _IpYMacAsociadas;
 	private ArrayList<MensajeDHCP> _pilaMensajes;
@@ -54,6 +54,7 @@ public class Datos {
 		}
 		buffer=dp.getData();
 		MensajeDHCP mensajeRecibido=new MensajeDHCP(buffer);
+		//System.out.println("Recibe mensaje");
 		return mensajeRecibido;
 	}
 	public synchronized void almacenarMensaje(MensajeDHCP mensaje) {
@@ -70,6 +71,7 @@ public class Datos {
 				recogido=elemento;
 				it.remove();
 				mensajeRecogido=true;
+				//System.out.println(new String(mac)+ " recoge");
 			}
 		}
 		return recogido;
@@ -77,6 +79,7 @@ public class Datos {
 	public synchronized void zzz() {
 		try {
 			wait();
+			System.out.println("Despierta");
 		}catch(InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -89,6 +92,7 @@ public class Datos {
 	//(ESTAS FUNCIONES SERAN UTILIZADAS POR EL COMUNICADOR)
 	
 	public MensajeDHCP generarDHCPOffer(MensajeDHCP mensaje) {
+		System.out.println("Generar offer");
 		byte[] cabeceraOffer=generarCabeceraOffer(mensaje);
 		byte[] opcionesOffer=generarOpcionesOffer();
 		
@@ -97,7 +101,8 @@ public class Datos {
 	}
 	
 	public MensajeDHCP generarDHCPRequest(MensajeDHCP mensaje) {
-		byte[] cabeceraRequest=generarCabeceraRequest(mensaje);
+		System.out.println("Generar request");
+		byte[] cabeceraRequest=generarCabeceraRequest(mensaje,false);
 		boolean ack=comprobarIpSolicitada(mensaje.getRequestedIp(),mensaje.getMac());
 		byte[] opcionesRequest=generarOpcionesRequest(ack);
 		
@@ -106,10 +111,11 @@ public class Datos {
 	}
 	
 	public MensajeDHCP generarDHCPRenovacion(MensajeDHCP mensaje) {
+		System.out.println("Renovacion en curso");
 		byte[] ip=mensaje.getIPCabecera();
 		byte[] mac=mensaje.getMac();
 		boolean ack=comprobarIpSolicitada(ip,mac);
-		byte[] cabeceraRenovacion=generarCabeceraRequest(mensaje);
+		byte[] cabeceraRenovacion=generarCabeceraRequest(mensaje,true);
 		byte[] opcionesRenovacion=generarOpcionesRequest(ack);
 		
 		MensajeDHCP mensajeDHCPRenovacion=montarMensaje(cabeceraRenovacion,opcionesRenovacion);
@@ -136,6 +142,7 @@ public class Datos {
 			if(item.getKey()==host&&!mac1.equals(mac2)) {
 				ipCorrecta=false;
 				//LA IP ESTA EN USO POR OTRA DIRECCION MAC
+				System.err.println("La ip solicitda esta en uso");
 			}
 		}
 		return ipCorrecta;
@@ -146,14 +153,20 @@ public class Datos {
 	private byte[] generarCabeceraOffer(MensajeDHCP mensaje) {
 		ByteBuffer bb=ByteBuffer.allocate(236);
 		
-		bb=insertarValoresIniciales(bb,mensaje,false);
+		bb=insertarValoresIniciales(bb,mensaje,true);
 		//YIADDR
 		++IDHost;
 		bb.put((byte)172);
 		bb.put((byte)16);
 		bb.put((byte)1);
 		bb.put((byte)IDHost);
-		//SIADDR,GIADDR,MAC,SNAME,FILE...
+		//SIADDR,GIADDR,
+		for(int i=0;i<8;++i) {
+			bb.put((byte)0);
+			}
+		//MAC
+		bb.put(mensaje.getMac());
+		//SNAME,FILE...
 		if(bb.hasRemaining()) {
 			bb.put((byte)0);
 		}
@@ -161,13 +174,24 @@ public class Datos {
 		byte[] cabecera=bb.array();
 		return cabecera;
 	}
-	private byte[] generarCabeceraRequest(MensajeDHCP mensaje) {
+	private byte[] generarCabeceraRequest(MensajeDHCP mensaje, boolean renovacion) {
 		ByteBuffer bb=ByteBuffer.allocate(236);
 		
-		bb=insertarValoresIniciales(bb,mensaje,true);
+		bb=insertarValoresIniciales(bb,mensaje,false);
 		//YIADDR
-		bb.put(mensaje.getRequestedIp());
-		//SIADDR,GIADDR,MAC,SNAME,FILE...
+		if(!renovacion) {
+			bb.put(mensaje.getRequestedIp());	
+		}
+		else {
+			bb.put(mensaje.getIPCabecera());
+		}
+		//SIADDR,GIADDR,
+		for(int i=0;i<8;++i) {
+			bb.put((byte)0);
+		}
+		//MAC
+		bb.put(mensaje.getMac());
+		//SNAME,FILE...
 		if(bb.hasRemaining()) {
 			bb.put((byte)0);
 		}
@@ -183,6 +207,7 @@ public class Datos {
 		//OPCION
 		bb.put((byte)53);//TIPO DE MENSAJE
 		bb.put((byte)1);//
+		bb.put((byte)2);//OFFER
 
 		bb=insertarOpcionesFijas(bb);
 		
@@ -202,8 +227,10 @@ public class Datos {
 		bb.put((byte)1);//
 		if(ack) {
 			bb.put((byte)5);//ACK
+			System.err.println("ACK");
 		}else {
 			bb.put((byte)6);//NAK
+			System.err.println("NAK");
 		}
 		bb=insertarOpcionesFijas(bb);
 		
@@ -251,12 +278,12 @@ public class Datos {
 		bb.put((byte)0);
 		bb.put((byte)0);
 		//FLAGS
-		if(broadcast) {
+		if(!broadcast) {
 			bb.put((byte)0);
 			bb.put((byte)0);
 		}else {
 			bb.put((byte)0);
-			bb.put((byte)32678);
+			bb.put((byte)32768);
 		}
 		//CIADDR (ip cliente)
 		bb.put((byte)0);
@@ -292,14 +319,14 @@ public class Datos {
 		//OPCION
 		bb.put((byte)3);//IP ROUTER
 		bb.put((byte)4);//
-		bb.put((byte)172);//255.255.255.0
+		bb.put((byte)172);//172.16.1.1
 		bb.put((byte)16);
 		bb.put((byte)1);
 		bb.put((byte)1);
 		//OPCION
-		bb.put((byte)3);//IP SERVIDOR (ESTE EQUIPO)
+		bb.put((byte)54);//IP ROUTER
 		bb.put((byte)4);//
-		bb.put((byte)172);//255.255.255.0
+		bb.put((byte)172);//172.16.1.2
 		bb.put((byte)16);
 		bb.put((byte)1);
 		bb.put((byte)2);

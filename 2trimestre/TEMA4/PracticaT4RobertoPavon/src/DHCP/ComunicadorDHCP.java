@@ -18,12 +18,13 @@ public class ComunicadorDHCP implements Runnable{
 	MensajeDHCP _mensajeRespuesta;
 	private Datos _datos;
 	private boolean _acabar;
+	private boolean uno=true;
 	
 	public ComunicadorDHCP(MensajeDHCP mensajeCliente, Datos datos) {
 		this._mensajeCliente=mensajeCliente;
 		this._datos=datos;
-		this._acabar=false;
-		
+		this._acabar=true;
+		System.out.println("Inicia hilo");
 		datos.anhadirMac(_mensajeCliente.getMac());
 	}
 	
@@ -32,15 +33,17 @@ public class ComunicadorDHCP implements Runnable{
 	public void run() {
 		
 		interpretarMensaje(this._mensajeCliente);
-		
-		if(!_acabar) {
+		uno=false;
+		while(!_acabar) {
 			_mensajeRecogido=_datos.recogerMEnsaje(_mensajeCliente.getMac());
 			if(_mensajeRecogido!=null) {
 				interpretarMensaje(_mensajeRecogido);
 			}
 			
 		}
+		
 		_datos.eliminarMac(_mensajeCliente.getMac());
+		System.out.println("termina hilo");
 	}
 	
 	private void interpretarMensaje(MensajeDHCP mensaje) {
@@ -48,13 +51,18 @@ public class ComunicadorDHCP implements Runnable{
 		switch(mensaje.getTipoDeMensaje()){
 		
 		case Discover:
-			_mensajeRespuesta=_datos.generarDHCPOffer(mensaje);
+			if(uno) {
+				_mensajeRespuesta=_datos.generarDHCPOffer(mensaje);
+			}
+			_acabar=false;
 			break;
 		case RequestRenovacion:
 			_mensajeRespuesta=_datos.generarDHCPRenovacion(mensaje);
+			_acabar=true;
 			break;
 		case Request:
 			_mensajeRespuesta=_datos.generarDHCPRequest(mensaje);
+			_acabar=true;
 			break;
 		default:
 			System.err.println("Seguramente se haya detectado un mensaje DHCP Inform. Ignorado con éxito.");
@@ -64,9 +72,6 @@ public class ComunicadorDHCP implements Runnable{
 		
 		if(_mensajeRespuesta!=null) {
 			_datos.enviarMensaje(_mensajeRespuesta);
-		}
-		if(_mensajeCliente.getTipoDeMensaje()==TipoMensaje.Discover) {
-			this._datos.zzz();
 		}
 	}
 

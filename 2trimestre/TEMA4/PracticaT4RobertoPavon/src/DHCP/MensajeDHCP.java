@@ -25,7 +25,6 @@ public class MensajeDHCP {
 		this._mac=identificarMac(this._datosMensaje);
 		this._IpCabecera=identificarIpCabecera(this._datosMensaje);
 		this._tipoDeMensaje=identificarTipoDeMensaje(this._datosMensaje);
-		this._requestedIp=identificarRequestedIp(this._datosMensaje);
 		this._xid=identificarXid(this._datosMensaje);
 	}
 	
@@ -76,8 +75,11 @@ public class MensajeDHCP {
 			tipo=TipoMensaje.Discover;
 		}else if(tipoDeMensaje==3 &&_IpCabecera[0]!=0) {
 			tipo=TipoMensaje.RequestRenovacion;
+			this._requestedIp=new byte[3];
+			
 		}else if(tipoDeMensaje==3) {
 			tipo=TipoMensaje.Request;
+			this._requestedIp=identificarRequestedIp(this._datosMensaje);
 		}else {
 			tipo=TipoMensaje.Otro;
 		}
